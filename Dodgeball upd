@@ -1,0 +1,674 @@
+local P=game:GetService("Players")
+local RS=game:GetService("RunService")
+local UIS=game:GetService("UserInputService")
+local TS=game:GetService("TweenService")
+local Lighting=game:GetService("Lighting")
+local lp=P.LocalPlayer
+local cam=workspace.CurrentCamera
+local sel,go=nil,true
+local godMode=false
+local noclipConn=nil
+local BD,MD=1,200
+local OWNER="GG_gamerz002"
+local BG=Color3.fromRGB(5,5,8)
+local CD=Color3.fromRGB(10,14,10)
+local AC=Color3.fromRGB(0,255,65)
+local A2=Color3.fromRGB(0,180,45)
+local AD=Color3.fromRGB(0,120,30)
+local RD=Color3.fromRGB(255,30,50)
+local GR=Color3.fromRGB(0,255,100)
+local YL=Color3.fromRGB(200,255,0)
+local OR=Color3.fromRGB(255,150,0)
+local GD=Color3.fromRGB(255,215,0)
+local CY=Color3.fromRGB(0,200,255)
+local T1=Color3.fromRGB(0,255,65)
+local T2=Color3.fromRGB(0,160,50)
+local T3=Color3.fromRGB(0,80,25)
+local BR=Color3.fromRGB(0,60,20)
+local TB=Color3.fromRGB(8,12,8)
+local PW,PH=220,270
+local pn,tname,tdist,tstat,sdot,avp,avi,plist,tpB,tpL,plbl,selB,selL,twrap
+local function rt(p)local c=p.Character return c and c:FindFirstChild("HumanoidRootPart")end
+local function hm(p)local c=p.Character return c and c:FindFirstChildWhichIsA("Humanoid")end
+local function al(p)local x=hm(p)return x and x.Health>0 end
+local function tw2(o,d,pr)TS:Create(o,TweenInfo.new(d,Enum.EasingStyle.Quint,Enum.EasingDirection.Out),pr):Play()end
+local function twB(o,d,pr)TS:Create(o,TweenInfo.new(d,Enum.EasingStyle.Back,Enum.EasingDirection.Out),pr):Play()end
+local function bp(tr)
+local pos=tr.Position+(-tr.CFrame.LookVector*BD)
+return Vector3.new(pos.X,tr.Position.Y,pos.Z)
+end
+local function freeze(m)
+m.Velocity=Vector3.zero
+m.AssemblyLinearVelocity=Vector3.zero
+m.AssemblyAngularVelocity=Vector3.zero
+end
+local function rainbow(t)
+local s=t%1
+local r2,g2,b2
+if s<1/6 then r2=1 g2=s*6 b2=0
+elseif s<2/6 then r2=1-(s-1/6)*6 g2=1 b2=0
+elseif s<3/6 then r2=0 g2=1 b2=(s-2/6)*6
+elseif s<4/6 then r2=0 g2=1-(s-3/6)*6 b2=1
+elseif s<5/6 then r2=(s-4/6)*6 g2=0 b2=1
+else r2=1 g2=0 b2=1-(s-5/6)*6 end
+return Color3.new(r2,g2,b2)
+end
+local function getTag(p)
+if p.Name==OWNER then return " [OWNER👑]"end
+if p==lp then return " [You]"end
+return ""
+end
+local function createOwnerTag(plr)
+local ch=plr.Character
+if not ch then return end
+local head=ch:WaitForChild("Head",5)
+if not head then return end
+local old=head:FindFirstChild("OwnerTag")
+if old then old:Destroy()end
+local bb=Instance.new("BillboardGui")
+bb.Name="OwnerTag"bb.Adornee=head
+bb.Size=UDim2.new(0,200,0,50)
+bb.StudsOffset=Vector3.new(0,2.5,0)
+bb.AlwaysOnTop=true bb.Parent=head
+local tl=Instance.new("TextLabel")
+tl.Size=UDim2.new(1,0,1,0)tl.BackgroundTransparency=1
+tl.Text="OWNER 👑"tl.TextColor3=GD
+tl.TextStrokeTransparency=0
+tl.TextStrokeColor3=Color3.fromRGB(0,0,0)
+tl.TextSize=22 tl.Font=Enum.Font.GothamBold
+tl.Parent=bb
+task.spawn(function()
+local h=0
+while bb and bb.Parent do
+h=(h+0.01)%1
+tl.TextColor3=rainbow(h)
+task.wait(0.03)
+end
+end)
+end
+local function setupOwner()
+for _,plr in P:GetPlayers()do
+if plr.Name==OWNER then
+if plr.Character then createOwnerTag(plr)end
+plr.CharacterAdded:Connect(function()task.wait(1)createOwnerTag(plr)end)
+end
+end
+P.PlayerAdded:Connect(function(plr)
+if plr.Name==OWNER then
+plr.CharacterAdded:Connect(function()task.wait(1)createOwnerTag(plr)end)
+if plr.Character then createOwnerTag(plr)end
+end
+end)
+end
+setupOwner()
+local function applyGodMode()
+if not godMode then return end
+local ch=lp.Character if not ch then return end
+local h=ch:FindFirstChildWhichIsA("Humanoid")if not h then return end
+h.WalkSpeed=50 h.JumpHeight=7.2 h.JumpPower=50 h.UseJumpPower=true
+end
+local function startNoclip()
+if noclipConn then noclipConn:Disconnect()noclipConn=nil end
+noclipConn=RS.Stepped:Connect(function()
+if not godMode then return end
+local ch=lp.Character if not ch then return end
+for _,p in ch:GetDescendants()do
+if p:IsA("BasePart")then p.CanCollide=false end
+end end)
+end
+local function stopNoclip()
+if noclipConn then noclipConn:Disconnect()noclipConn=nil end
+local ch=lp.Character if not ch then return end
+for _,p in ch:GetDescendants()do
+if p:IsA("BasePart")then p.CanCollide=true end
+end
+end
+UIS.JumpRequest:Connect(function()
+if not godMode then return end
+local h=hm(lp)if h then h:ChangeState(Enum.HumanoidStateType.Jumping)end
+end)
+lp.CharacterAdded:Connect(function()
+if godMode then task.wait(0.5)applyGodMode()startNoclip()end
+end)
+local function makeDrag(frame,handle)
+local dg,ds,sp=false,nil,nil
+handle.InputBegan:Connect(function(i)
+if i.UserInputType==Enum.UserInputType.MouseButton1 or i.UserInputType==Enum.UserInputType.Touch then
+dg=true ds=i.Position sp=frame.Position
+i.Changed:Connect(function()if i.UserInputState==Enum.UserInputState.End then dg=false end end)end end)
+UIS.InputChanged:Connect(function(i)
+if dg and(i.UserInputType==Enum.UserInputType.MouseMovement or i.UserInputType==Enum.UserInputType.Touch)then
+local d=i.Position-ds
+frame.Position=UDim2.new(sp.X.Scale,sp.X.Offset+d.X,sp.Y.Scale,sp.Y.Offset+d.Y)end end)
+end
+local gui=Instance.new("ScreenGui")
+gui.Name="E"gui.ResetOnSpawn=false gui.ZIndexBehavior=Enum.ZIndexBehavior.Sibling
+gui.IgnoreGuiInset=true gui.Parent=lp:WaitForChild("PlayerGui")
+local blur=Instance.new("BlurEffect")
+blur.Size=0 blur.Name="_EBlur"blur.Parent=Lighting
+local loadFrame=Instance.new("Frame")
+loadFrame.Size=UDim2.new(0,PW,0,PH)loadFrame.Position=UDim2.new(.5,0,.5,0)
+loadFrame.AnchorPoint=Vector2.new(.5,.5)loadFrame.BackgroundColor3=BG
+loadFrame.BorderSizePixel=0 loadFrame.ZIndex=200 loadFrame.Parent=gui
+loadFrame.ClipsDescendants=true
+Instance.new("UICorner",loadFrame).CornerRadius=UDim.new(0,6)
+local ldStk=Instance.new("UIStroke")
+ldStk.Color=AD ldStk.Thickness=1.5 ldStk.Transparency=.2 ldStk.Parent=loadFrame
+local ldTop=Instance.new("Frame")
+ldTop.Size=UDim2.new(1,0,0,2)ldTop.BackgroundColor3=AC
+ldTop.BorderSizePixel=0 ldTop.ZIndex=210 ldTop.Parent=loadFrame
+local ldTopG=Instance.new("UIGradient")
+ldTopG.Color=ColorSequence.new{
+ColorSequenceKeypoint.new(0,Color3.fromRGB(0,255,65)),
+ColorSequenceKeypoint.new(.5,Color3.fromRGB(0,180,255)),
+ColorSequenceKeypoint.new(1,Color3.fromRGB(0,255,65))}
+ldTopG.Parent=ldTop
+task.spawn(function()local o=0 while loadFrame and loadFrame.Parent do o=(o+.008)%1 ldTopG.Offset=Vector2.new(o,0)task.wait(.03)end end)
+local ldScan=Instance.new("Frame")
+ldScan.Size=UDim2.new(1,0,0,1)ldScan.BackgroundColor3=AC
+ldScan.BackgroundTransparency=.85 ldScan.BorderSizePixel=0
+ldScan.ZIndex=220 ldScan.Parent=loadFrame
+task.spawn(function()while loadFrame and loadFrame.Parent do
+ldScan.Position=UDim2.new(0,0,0,0)
+tw2(ldScan,2,{Position=UDim2.new(0,0,1,0)})task.wait(2)end end)
+local ldPrefix=Instance.new("TextLabel")
+ldPrefix.Size=UDim2.new(1,-20,0,10)ldPrefix.Position=UDim2.new(0,10,0,8)
+ldPrefix.BackgroundTransparency=1 ldPrefix.Text="root@system:~$"
+ldPrefix.TextColor3=T3 ldPrefix.TextSize=8 ldPrefix.Font=Enum.Font.Code
+ldPrefix.TextXAlignment=Enum.TextXAlignment.Left ldPrefix.ZIndex=205 ldPrefix.Parent=loadFrame
+local ldTitle=Instance.new("TextLabel")
+ldTitle.Size=UDim2.new(1,-20,0,16)ldTitle.Position=UDim2.new(0,10,0,20)
+ldTitle.BackgroundTransparency=1 ldTitle.Text="[ ELIMINATOR ]"
+ldTitle.TextColor3=AC ldTitle.TextSize=14 ldTitle.Font=Enum.Font.Code
+ldTitle.TextXAlignment=Enum.TextXAlignment.Left ldTitle.ZIndex=205 ldTitle.Parent=loadFrame
+task.spawn(function()while loadFrame and loadFrame.Parent do
+tw2(ldTitle,.5,{TextTransparency=.3})task.wait(.5)
+tw2(ldTitle,.5,{TextTransparency=0})task.wait(.5)end end)
+local ldBy=Instance.new("TextLabel")
+ldBy.Size=UDim2.new(1,-20,0,10)ldBy.Position=UDim2.new(0,10,0,38)
+ldBy.BackgroundTransparency=1 ldBy.Text="by "..OWNER
+ldBy.TextSize=9 ldBy.Font=Enum.Font.GothamBold
+ldBy.TextXAlignment=Enum.TextXAlignment.Left ldBy.ZIndex=205 ldBy.Parent=loadFrame
+task.spawn(function()local h=0 while loadFrame and loadFrame.Parent do
+h=(h+0.008)%1 ldBy.TextColor3=rainbow(h)task.wait(0.03)end end)
+local ldDiv=Instance.new("Frame")
+ldDiv.Size=UDim2.new(1,-20,0,1)ldDiv.Position=UDim2.new(0,10,0,52)
+ldDiv.BackgroundColor3=AD ldDiv.BorderSizePixel=0 ldDiv.ZIndex=205 ldDiv.Parent=loadFrame
+local ldDot=Instance.new("Frame")
+ldDot.Size=UDim2.new(0,6,0,6)ldDot.Position=UDim2.new(1,-16,0,12)
+ldDot.BackgroundColor3=AC ldDot.ZIndex=205 ldDot.Parent=loadFrame
+Instance.new("UICorner",ldDot).CornerRadius=UDim.new(1,0)
+task.spawn(function()while loadFrame and loadFrame.Parent do
+tw2(ldDot,.3,{BackgroundTransparency=.7})task.wait(.3)
+tw2(ldDot,.3,{BackgroundTransparency=0})task.wait(.3)end end)
+local ldLog=Instance.new("TextLabel")
+ldLog.Size=UDim2.new(1,-20,0,120)ldLog.Position=UDim2.new(0,10,0,58)
+ldLog.BackgroundTransparency=1 ldLog.Text=""
+ldLog.TextColor3=T2 ldLog.TextSize=8 ldLog.Font=Enum.Font.Code
+ldLog.TextXAlignment=Enum.TextXAlignment.Left
+ldLog.TextYAlignment=Enum.TextYAlignment.Top
+ldLog.TextWrapped=true ldLog.ZIndex=205 ldLog.Parent=loadFrame
+local ldBarBg=Instance.new("Frame")
+ldBarBg.Size=UDim2.new(1,-20,0,6)ldBarBg.Position=UDim2.new(0,10,0,185)
+ldBarBg.BackgroundColor3=Color3.fromRGB(15,20,15)ldBarBg.BorderSizePixel=0
+ldBarBg.ZIndex=205 ldBarBg.Parent=loadFrame
+Instance.new("UICorner",ldBarBg).CornerRadius=UDim.new(1,0)
+local ldBarFill=Instance.new("Frame")
+ldBarFill.Size=UDim2.new(0,0,1,0)ldBarFill.BackgroundColor3=AC
+ldBarFill.BorderSizePixel=0 ldBarFill.ZIndex=206 ldBarFill.Parent=ldBarBg
+Instance.new("UICorner",ldBarFill).CornerRadius=UDim.new(1,0)
+local ldPct=Instance.new("TextLabel")
+ldPct.Size=UDim2.new(1,-20,0,12)ldPct.Position=UDim2.new(0,10,0,195)
+ldPct.BackgroundTransparency=1 ldPct.Text="0%"
+ldPct.TextColor3=AC ldPct.TextSize=10 ldPct.Font=Enum.Font.Code
+ldPct.TextXAlignment=Enum.TextXAlignment.Right ldPct.ZIndex=205 ldPct.Parent=loadFrame
+local ldStatus=Instance.new("TextLabel")
+ldStatus.Size=UDim2.new(1,-60,0,12)ldStatus.Position=UDim2.new(0,10,0,195)
+ldStatus.BackgroundTransparency=1 ldStatus.Text="● init..."
+ldStatus.TextColor3=T3 ldStatus.TextSize=8 ldStatus.Font=Enum.Font.Code
+ldStatus.TextXAlignment=Enum.TextXAlignment.Left ldStatus.ZIndex=205 ldStatus.Parent=loadFrame
+local ldBtm=Instance.new("Frame")
+ldBtm.Size=UDim2.new(1,0,0,18)ldBtm.Position=UDim2.new(0,0,1,-18)
+ldBtm.BackgroundColor3=Color3.fromRGB(3,5,3)ldBtm.BorderSizePixel=0
+ldBtm.ZIndex=205 ldBtm.Parent=loadFrame
+Instance.new("UICorner",ldBtm).CornerRadius=UDim.new(0,6)
+local ldBtmF=Instance.new("Frame")
+ldBtmF.Size=UDim2.new(1,0,0,6)ldBtmF.BackgroundColor3=Color3.fromRGB(3,5,3)
+ldBtmF.BorderSizePixel=0 ldBtmF.ZIndex=205 ldBtmF.Parent=ldBtm
+local ldVer=Instance.new("TextLabel")
+ldVer.Size=UDim2.new(1,-20,1,0)ldVer.Position=UDim2.new(0,10,0,0)
+ldVer.BackgroundTransparency=1 ldVer.Text="sys.v3.2 // loading..."
+ldVer.TextColor3=T3 ldVer.TextSize=8 ldVer.Font=Enum.Font.Code
+ldVer.TextXAlignment=Enum.TextXAlignment.Left ldVer.ZIndex=206 ldVer.Parent=ldBtm
+local loadMsgs={
+{t=0,m="[sys] boot...",s="● boot..."},
+{t=1,m="[sys] core...",s="● core..."},
+{t=2,m="[net] connect...",s="● net..."},
+{t=3,m="[gui] init...",s="● gui..."},
+{t=4,m="[gui] players...",s="● list..."},
+{t=5,m="[sys] target...",s="● lock..."},
+{t=6,m="[sys] kill...",s="● kill..."},
+{t=7,m="[mod] unleash...",s="● mod..."},
+{t=8,m="[sec] verify...",s="● auth..."},
+{t=9,m="[sys] final...",s="● final..."},
+{t=10,m="[sys] ✓ ready",s="● ready"},
+}
+tw2(blur,.5,{Size=24})
+loadFrame.Size=UDim2.new(0,PW,0,0)loadFrame.BackgroundTransparency=1
+twB(loadFrame,.5,{Size=UDim2.new(0,PW,0,PH),BackgroundTransparency=0})
+task.spawn(function()
+local logText=""
+for _,msg in ipairs(loadMsgs)do
+task.wait(1)
+logText=logText.."> "..msg.m.."\n"
+ldLog.Text=logText
+ldStatus.Text=msg.s
+local pct=math.min(math.floor((msg.t/10)*100),100)
+ldPct.Text=pct.."%"
+tw2(ldBarFill,.4,{Size=UDim2.new(pct/100,0,1,0)})
+if msg.t>=10 then
+ldStatus.TextColor3=AC
+ldPct.TextColor3=GR
+ldVer.Text="sys.v3.2 // done"
+tw2(ldBarFill,.3,{BackgroundColor3=GR})
+end
+end
+task.wait(0.5)
+tw2(loadFrame,.4,{Size=UDim2.new(0,PW,0,0),BackgroundTransparency=1})
+tw2(blur,.5,{Size=0})
+task.wait(0.5)
+loadFrame:Destroy()
+blur:Destroy()
+pn.Visible=true
+pn.Size=UDim2.new(0,PW,0,0)pn.BackgroundTransparency=1
+twB(pn,.5,{Size=UDim2.new(0,PW,0,PH),BackgroundTransparency=0})
+task.delay(0.5,function()
+twrap.Visible=true
+twrap.Size=UDim2.new(0,0,0,0)
+twB(twrap,.4,{Size=UDim2.new(0,46,0,46)})
+end)
+end)
+pn=Instance.new("Frame")
+pn.Name="P"pn.Size=UDim2.new(0,PW,0,PH)pn.Position=UDim2.new(.5,0,.5,0)
+pn.AnchorPoint=Vector2.new(.5,.5)pn.BackgroundColor3=BG
+pn.BackgroundTransparency=1 pn.BorderSizePixel=0 pn.Visible=false
+pn.ClipsDescendants=true pn.ZIndex=2 pn.Parent=gui
+Instance.new("UICorner",pn).CornerRadius=UDim.new(0,6)
+local pstk=Instance.new("UIStroke")
+pstk.Color=AD pstk.Thickness=1.5 pstk.Transparency=.2 pstk.Parent=pn
+local scanLine2=Instance.new("Frame")
+scanLine2.Size=UDim2.new(1,0,0,1)scanLine2.BackgroundColor3=AC
+scanLine2.BackgroundTransparency=.85 scanLine2.BorderSizePixel=0
+scanLine2.ZIndex=20 scanLine2.Parent=pn
+task.spawn(function()while true do
+scanLine2.Position=UDim2.new(0,0,0,0)
+tw2(scanLine2,3,{Position=UDim2.new(0,0,1,0)})task.wait(3)end end)
+local topL=Instance.new("Frame")
+topL.Size=UDim2.new(1,0,0,2)topL.BackgroundColor3=AC
+topL.BorderSizePixel=0 topL.ZIndex=10 topL.Parent=pn
+local tlG=Instance.new("UIGradient")
+tlG.Color=ColorSequence.new{
+ColorSequenceKeypoint.new(0,Color3.fromRGB(0,255,65)),
+ColorSequenceKeypoint.new(.5,Color3.fromRGB(0,180,255)),
+ColorSequenceKeypoint.new(1,Color3.fromRGB(0,255,65))}
+tlG.Parent=topL
+task.spawn(function()local o=0 while true do o=(o+.005)%1 tlG.Offset=Vector2.new(o,0)task.wait(.03)end end)
+local dragBar=Instance.new("TextButton")
+dragBar.Size=UDim2.new(1,0,0,32)dragBar.Position=UDim2.new(0,0,0,2)
+dragBar.BackgroundTransparency=1 dragBar.Text=""dragBar.AutoButtonColor=false
+dragBar.BorderSizePixel=0 dragBar.ZIndex=11 dragBar.Parent=pn
+makeDrag(pn,dragBar)
+local dragDots=Instance.new("TextLabel")
+dragDots.Size=UDim2.new(0,40,0,6)dragDots.Position=UDim2.new(.5,0,0,2)
+dragDots.AnchorPoint=Vector2.new(.5,0)dragDots.BackgroundTransparency=1
+dragDots.Text="▪ ▪ ▪"dragDots.TextColor3=T3 dragDots.TextSize=6
+dragDots.Font=Enum.Font.Code dragDots.ZIndex=12 dragDots.Parent=dragBar
+local prefix2=Instance.new("TextLabel")
+prefix2.Size=UDim2.new(1,-16,0,8)prefix2.Position=UDim2.new(0,8,0,8)
+prefix2.BackgroundTransparency=1 prefix2.Text="root@system:~$"
+prefix2.TextColor3=T3 prefix2.TextSize=7 prefix2.Font=Enum.Font.Code
+prefix2.TextXAlignment=Enum.TextXAlignment.Left prefix2.ZIndex=4 prefix2.Parent=pn
+local ttl=Instance.new("TextLabel")
+ttl.Size=UDim2.new(1,-16,0,12)ttl.Position=UDim2.new(0,8,0,17)
+ttl.BackgroundTransparency=1 ttl.Text="[ ELIMINATOR ]"
+ttl.TextColor3=AC ttl.TextSize=11 ttl.Font=Enum.Font.Code
+ttl.TextXAlignment=Enum.TextXAlignment.Left ttl.ZIndex=4 ttl.Parent=pn
+task.spawn(function()while true do
+tw2(ttl,.5,{TextTransparency=.3})task.wait(.5)
+tw2(ttl,.5,{TextTransparency=0})task.wait(.5)end end)
+local byLabel2=Instance.new("TextLabel")
+byLabel2.Size=UDim2.new(1,-16,0,10)byLabel2.Position=UDim2.new(0,8,0,30)
+byLabel2.BackgroundTransparency=1 byLabel2.Text="by "..OWNER
+byLabel2.TextSize=8 byLabel2.Font=Enum.Font.GothamBold
+byLabel2.TextXAlignment=Enum.TextXAlignment.Left byLabel2.ZIndex=4 byLabel2.Parent=pn
+task.spawn(function()local h=0 while true do
+h=(h+0.008)%1 byLabel2.TextColor3=rainbow(h)task.wait(0.03)end end)
+sdot=Instance.new("Frame")
+sdot.Size=UDim2.new(0,5,0,5)sdot.Position=UDim2.new(1,-13,0,12)
+sdot.BackgroundColor3=AC sdot.ZIndex=4 sdot.Parent=pn
+Instance.new("UICorner",sdot).CornerRadius=UDim.new(1,0)
+task.spawn(function()while true do
+tw2(sdot,.4,{BackgroundTransparency=.6})task.wait(.4)
+tw2(sdot,.4,{BackgroundTransparency=0})task.wait(.4)end end)
+local dv1=Instance.new("Frame")
+dv1.Size=UDim2.new(1,-16,0,1)dv1.Position=UDim2.new(0,8,0,44)
+dv1.BackgroundColor3=AD dv1.BorderSizePixel=0 dv1.ZIndex=3 dv1.Parent=pn
+local trow=Instance.new("Frame")
+trow.Size=UDim2.new(1,-16,0,36)trow.Position=UDim2.new(0,8,0,50)
+trow.BackgroundColor3=CD trow.BorderSizePixel=0 trow.ZIndex=3 trow.Parent=pn
+Instance.new("UICorner",trow).CornerRadius=UDim.new(0,5)
+local trowStk=Instance.new("UIStroke")
+trowStk.Color=AD trowStk.Thickness=1 trowStk.Transparency=.5 trowStk.Parent=trow
+local avw=Instance.new("Frame")
+avw.Size=UDim2.new(0,26,0,26)avw.Position=UDim2.new(0,5,.5,0)
+avw.AnchorPoint=Vector2.new(0,.5)avw.BackgroundColor3=BG
+avw.ZIndex=4 avw.Parent=trow
+Instance.new("UICorner",avw).CornerRadius=UDim.new(1,0)
+local avStk=Instance.new("UIStroke")
+avStk.Color=AD avStk.Thickness=1.5 avStk.Transparency=.5 avStk.Parent=avw
+avi=Instance.new("ImageLabel")
+avi.Size=UDim2.new(1,-2,1,-2)avi.Position=UDim2.new(.5,0,.5,0)
+avi.AnchorPoint=Vector2.new(.5,.5)avi.BackgroundTransparency=1
+avi.Image=""avi.ZIndex=5 avi.Parent=avw
+Instance.new("UICorner",avi).CornerRadius=UDim.new(1,0)
+avp=Instance.new("TextLabel")
+avp.Size=UDim2.new(1,0,1,0)avp.BackgroundTransparency=1
+avp.Text="?"avp.TextColor3=T3 avp.TextSize=12
+avp.Font=Enum.Font.Code avp.ZIndex=5 avp.Parent=avw
+tname=Instance.new("TextLabel")
+tname.Size=UDim2.new(1,-70,0,12)tname.Position=UDim2.new(0,36,0,5)
+tname.BackgroundTransparency=1 tname.Text="> None"tname.TextColor3=T2
+tname.TextSize=9 tname.Font=Enum.Font.Code
+tname.TextXAlignment=Enum.TextXAlignment.Left
+tname.TextTruncate=Enum.TextTruncate.AtEnd tname.ZIndex=4 tname.Parent=trow
+tdist=Instance.new("TextLabel")
+tdist.Size=UDim2.new(1,-70,0,10)tdist.Position=UDim2.new(0,36,0,18)
+tdist.BackgroundTransparency=1 tdist.Text="dist: —"tdist.TextColor3=T3
+tdist.TextSize=7 tdist.Font=Enum.Font.Code
+tdist.TextXAlignment=Enum.TextXAlignment.Left tdist.ZIndex=4 tdist.Parent=trow
+tstat=Instance.new("TextLabel")
+tstat.Size=UDim2.new(0,32,0,12)tstat.Position=UDim2.new(1,-38,.5,0)
+tstat.AnchorPoint=Vector2.new(0,.5)tstat.BackgroundColor3=BG
+tstat.Text="IDLE"tstat.TextColor3=T3 tstat.TextSize=6
+tstat.Font=Enum.Font.Code tstat.ZIndex=5 tstat.Parent=trow
+Instance.new("UICorner",tstat).CornerRadius=UDim.new(0,3)
+local statStk=Instance.new("UIStroke")
+statStk.Color=T3 statStk.Thickness=1 statStk.Transparency=.5 statStk.Parent=tstat
+local plh=Instance.new("TextLabel")
+plh.Size=UDim2.new(1,-16,0,10)plh.Position=UDim2.new(0,8,0,90)
+plh.BackgroundTransparency=1 plh.Text="// TARGETS"plh.TextColor3=T3
+plh.TextSize=7 plh.Font=Enum.Font.Code
+plh.TextXAlignment=Enum.TextXAlignment.Left plh.ZIndex=3 plh.Parent=pn
+plist=Instance.new("ScrollingFrame")
+plist.Size=UDim2.new(1,-16,0,68)plist.Position=UDim2.new(0,8,0,102)
+plist.BackgroundColor3=CD plist.BorderSizePixel=0
+plist.ScrollBarThickness=2 plist.ScrollBarImageColor3=AC
+plist.ScrollBarImageTransparency=.4
+plist.CanvasSize=UDim2.new(0,0,0,0)
+plist.AutomaticCanvasSize=Enum.AutomaticSize.Y
+plist.ZIndex=3 plist.ClipsDescendants=true plist.Parent=pn
+Instance.new("UICorner",plist).CornerRadius=UDim.new(0,5)
+local plStk=Instance.new("UIStroke")
+plStk.Color=AD plStk.Thickness=1 plStk.Transparency=.5 plStk.Parent=plist
+local llay=Instance.new("UIListLayout")
+llay.SortOrder=Enum.SortOrder.Name llay.Padding=UDim.new(0,1)llay.Parent=plist
+local lpad=Instance.new("UIPadding")
+lpad.PaddingTop=UDim.new(0,2)lpad.PaddingBottom=UDim.new(0,2)
+lpad.PaddingLeft=UDim.new(0,2)lpad.PaddingRight=UDim.new(0,2)lpad.Parent=plist
+local function mkb(n,tx,c,po)
+local b=Instance.new("TextButton")
+b.Name=n b.Size=UDim2.new(.48,0,0,24)b.Position=po
+b.BackgroundColor3=BG b.BorderSizePixel=0 b.Text=""
+b.AutoButtonColor=false b.ZIndex=3 b.Parent=pn
+Instance.new("UICorner",b).CornerRadius=UDim.new(0,5)
+local s=Instance.new("UIStroke")s.Color=c s.Thickness=1 s.Transparency=.4 s.Parent=b
+local l=Instance.new("TextLabel")l.Size=UDim2.new(1,0,1,0)
+l.BackgroundTransparency=1 l.Text=tx l.TextColor3=c
+l.TextSize=9 l.Font=Enum.Font.Code l.ZIndex=4 l.Parent=b
+b.MouseEnter:Connect(function()tw2(b,.15,{BackgroundColor3=c})tw2(l,.15,{TextColor3=BG})tw2(s,.15,{Transparency=0})end)
+b.MouseLeave:Connect(function()tw2(b,.15,{BackgroundColor3=BG})tw2(l,.15,{TextColor3=c})tw2(s,.15,{Transparency=.4})end)
+b.MouseButton1Down:Connect(function()tw2(b,.06,{Size=b.Size-UDim2.new(0,2,0,2)})end)
+b.MouseButton1Up:Connect(function()tw2(b,.1,{Size=UDim2.new(.48,0,0,24)})end)
+return b,l,s end
+selB,selL=mkb("S","[SELECT]",AC,UDim2.new(0,8,0,176))
+tpB,tpL,tpS=mkb("T","[KILL]",RD,UDim2.new(.52,0,0,176))
+local dv2=Instance.new("Frame")
+dv2.Size=UDim2.new(1,-16,0,1)dv2.Position=UDim2.new(0,8,0,206)
+dv2.BackgroundColor3=AD dv2.BorderSizePixel=0 dv2.ZIndex=3 dv2.Parent=pn
+local unleashRow=Instance.new("Frame")
+unleashRow.Size=UDim2.new(1,-16,0,26)unleashRow.Position=UDim2.new(0,8,0,212)
+unleashRow.BackgroundColor3=CD unleashRow.BorderSizePixel=0
+unleashRow.ZIndex=3 unleashRow.Parent=pn
+Instance.new("UICorner",unleashRow).CornerRadius=UDim.new(0,5)
+local urStk=Instance.new("UIStroke")
+urStk.Color=AD urStk.Thickness=1 urStk.Transparency=.5 urStk.Parent=unleashRow
+local unleashIcon=Instance.new("TextLabel")
+unleashIcon.Size=UDim2.new(0,14,1,0)unleashIcon.Position=UDim2.new(0,6,0,0)
+unleashIcon.BackgroundTransparency=1 unleashIcon.Text="⚡"
+unleashIcon.TextColor3=OR unleashIcon.TextSize=10
+unleashIcon.Font=Enum.Font.GothamBold unleashIcon.ZIndex=4 unleashIcon.Parent=unleashRow
+local unleashLbl=Instance.new("TextLabel")
+unleashLbl.Size=UDim2.new(0,60,0,10)unleashLbl.Position=UDim2.new(0,22,0,3)
+unleashLbl.BackgroundTransparency=1 unleashLbl.Text="UNLEASH"
+unleashLbl.TextColor3=T1 unleashLbl.TextSize=8
+unleashLbl.Font=Enum.Font.Code unleashLbl.TextXAlignment=Enum.TextXAlignment.Left
+unleashLbl.ZIndex=4 unleashLbl.Parent=unleashRow
+local unleashSub=Instance.new("TextLabel")
+unleashSub.Size=UDim2.new(0,100,0,8)unleashSub.Position=UDim2.new(0,22,0,14)
+unleashSub.BackgroundTransparency=1 unleashSub.Text="spd|noclip|jump"
+unleashSub.TextColor3=T3 unleashSub.TextSize=6
+unleashSub.Font=Enum.Font.Code unleashSub.TextXAlignment=Enum.TextXAlignment.Left
+unleashSub.ZIndex=4 unleashSub.Parent=unleashRow
+local sliderBg=Instance.new("TextButton")
+sliderBg.Size=UDim2.new(0,32,0,16)
+sliderBg.Position=UDim2.new(1,-40,.5,0)
+sliderBg.AnchorPoint=Vector2.new(0,.5)
+sliderBg.BackgroundColor3=Color3.fromRGB(15,20,15)
+sliderBg.BorderSizePixel=0 sliderBg.Text=""
+sliderBg.AutoButtonColor=false sliderBg.ZIndex=4
+sliderBg.Parent=unleashRow
+Instance.new("UICorner",sliderBg).CornerRadius=UDim.new(1,0)
+local sliderStk=Instance.new("UIStroke")
+sliderStk.Color=AD sliderStk.Thickness=1
+sliderStk.Transparency=.3 sliderStk.Parent=sliderBg
+local sliderDot=Instance.new("Frame")
+sliderDot.Size=UDim2.new(0,12,0,12)
+sliderDot.Position=UDim2.new(0,2,.5,0)
+sliderDot.AnchorPoint=Vector2.new(0,.5)
+sliderDot.BackgroundColor3=T3
+sliderDot.ZIndex=5 sliderDot.Parent=sliderBg
+Instance.new("UICorner",sliderDot).CornerRadius=UDim.new(1,0)
+local dotStk=Instance.new("UIStroke")
+dotStk.Color=AD dotStk.Thickness=1
+dotStk.Transparency=.5 dotStk.Parent=sliderDot
+local function setSliderOn()
+tw2(sliderBg,.3,{BackgroundColor3=AD})
+tw2(sliderStk,.3,{Color=AC})
+tw2(sliderDot,.3,{Position=UDim2.new(1,-14,.5,0),BackgroundColor3=AC})
+tw2(dotStk,.3,{Color=AC,Transparency=0})
+tw2(unleashLbl,.2,{TextColor3=AC})
+tw2(urStk,.2,{Color=AC,Transparency=.2})
+end
+local function setSliderOff()
+tw2(sliderBg,.3,{BackgroundColor3=Color3.fromRGB(15,20,15)})
+tw2(sliderStk,.3,{Color=AD})
+tw2(sliderDot,.3,{Position=UDim2.new(0,2,.5,0),BackgroundColor3=T3})
+tw2(dotStk,.3,{Color=AD,Transparency=.5})
+tw2(unleashLbl,.2,{TextColor3=T1})
+tw2(urStk,.2,{Color=AD,Transparency=.5})
+end
+sliderBg.MouseButton1Click:Connect(function()
+godMode=not godMode
+if godMode then setSliderOn()applyGodMode()startNoclip()
+else setSliderOff()stopNoclip()
+local h=hm(lp)if h then h.WalkSpeed=16 h.JumpPower=50 h.JumpHeight=7.2 end end
+end)
+local btm=Instance.new("Frame")
+btm.Size=UDim2.new(1,0,0,18)btm.Position=UDim2.new(0,0,1,-18)
+btm.BackgroundColor3=Color3.fromRGB(3,5,3)btm.BorderSizePixel=0
+btm.ZIndex=3 btm.Parent=pn
+Instance.new("UICorner",btm).CornerRadius=UDim.new(0,6)
+local btf=Instance.new("Frame")
+btf.Size=UDim2.new(1,0,0,6)btf.BackgroundColor3=Color3.fromRGB(3,5,3)
+btf.BorderSizePixel=0 btf.ZIndex=3 btf.Parent=btm
+plbl=Instance.new("TextLabel")
+plbl.Size=UDim2.new(.6,0,1,0)plbl.Position=UDim2.new(0,8,0,0)
+plbl.BackgroundTransparency=1 plbl.Text="● ready"plbl.TextColor3=AC
+plbl.TextSize=8 plbl.Font=Enum.Font.Code
+plbl.TextXAlignment=Enum.TextXAlignment.Left plbl.ZIndex=4 plbl.Parent=btm
+local vlbl=Instance.new("TextLabel")
+vlbl.Size=UDim2.new(.4,-8,1,0)vlbl.Position=UDim2.new(.6,0,0,0)
+vlbl.BackgroundTransparency=1 vlbl.Text="v3.2"vlbl.TextColor3=T3
+vlbl.TextSize=8 vlbl.Font=Enum.Font.Code
+vlbl.TextXAlignment=Enum.TextXAlignment.Right vlbl.ZIndex=4 vlbl.Parent=btm
+twrap=Instance.new("Frame")
+twrap.Size=UDim2.new(0,46,0,46)twrap.Position=UDim2.new(0,10,0.5,-23)
+twrap.BackgroundTransparency=1 twrap.ZIndex=100 twrap.Visible=false
+twrap.Parent=gui
+local tglow=Instance.new("Frame")
+tglow.Size=UDim2.new(1,6,1,6)tglow.Position=UDim2.new(.5,0,.5,0)
+tglow.AnchorPoint=Vector2.new(.5,.5)tglow.BackgroundColor3=AC
+tglow.BackgroundTransparency=.7 tglow.ZIndex=100 tglow.Parent=twrap
+Instance.new("UICorner",tglow).CornerRadius=UDim.new(1,0)
+task.spawn(function()while true do tw2(tglow,1.4,{BackgroundTransparency=.88,Size=UDim2.new(1,12,1,12)})task.wait(1.4)tw2(tglow,1.4,{BackgroundTransparency=.6,Size=UDim2.new(1,4,1,4)})task.wait(1.4)end end)
+local tbtn=Instance.new("TextButton")
+tbtn.Size=UDim2.new(1,0,1,0)tbtn.Position=UDim2.new(.5,0,.5,0)
+tbtn.AnchorPoint=Vector2.new(.5,.5)tbtn.BackgroundColor3=TB
+tbtn.Text="✕"tbtn.TextColor3=RD tbtn.TextSize=20
+tbtn.Font=Enum.Font.Code tbtn.AutoButtonColor=false
+tbtn.BorderSizePixel=0 tbtn.ZIndex=101 tbtn.Parent=twrap
+Instance.new("UICorner",tbtn).CornerRadius=UDim.new(1,0)
+local tstk=Instance.new("UIStroke")
+tstk.Color=RD tstk.Thickness=2 tstk.Transparency=.2 tstk.Parent=tbtn
+local dragging,dragStart,startPos,wasDragged=false,nil,nil,false
+tbtn.InputBegan:Connect(function(i)
+if i.UserInputType==Enum.UserInputType.MouseButton1 or i.UserInputType==Enum.UserInputType.Touch then
+dragging=true wasDragged=false dragStart=i.Position startPos=twrap.Position
+i.Changed:Connect(function()if i.UserInputState==Enum.UserInputState.End then dragging=false end end)end end)
+UIS.InputChanged:Connect(function(i)
+if dragging and(i.UserInputType==Enum.UserInputType.MouseMovement or i.UserInputType==Enum.UserInputType.Touch)then
+local d=i.Position-dragStart
+if d.Magnitude>5 then wasDragged=true end
+twrap.Position=UDim2.new(startPos.X.Scale,startPos.X.Offset+d.X,startPos.Y.Scale,startPos.Y.Offset+d.Y)end end)
+tbtn.MouseButton1Up:Connect(function()
+if not wasDragged then
+if go then go=false
+tw2(pn,.25,{Size=UDim2.new(0,PW,0,0),BackgroundTransparency=1})
+tbtn.Text="◉"tw2(tbtn,.2,{TextColor3=AC})tw2(tstk,.2,{Color=AC})
+task.delay(.25,function()if not go then pn.Visible=false end end)
+else go=true pn.Visible=true
+pn.Size=UDim2.new(0,PW,0,0)pn.BackgroundTransparency=1
+twB(pn,.4,{Size=UDim2.new(0,PW,0,PH),BackgroundTransparency=0})
+tbtn.Text="✕"tw2(tbtn,.2,{TextColor3=RD})tw2(tstk,.2,{Color=RD})
+end end wasDragged=false end)
+tbtn.MouseEnter:Connect(function()tw2(tbtn,.2,{BackgroundColor3=Color3.fromRGB(10,20,10),TextSize=24})end)
+tbtn.MouseLeave:Connect(function()tw2(tbtn,.2,{BackgroundColor3=TB,TextSize=20})end)
+local function bld()
+for _,c in plist:GetChildren()do if c:IsA("TextButton")then c:Destroy()end end
+for _,p in P:GetPlayers()do
+local isO=p.Name==OWNER
+local isMe=p==lp
+local tag=getTag(p)
+local e=Instance.new("TextButton")
+e.Name=p.Name e.Size=UDim2.new(1,0,0,18)
+e.BackgroundColor3=BG e.BorderSizePixel=0 e.Text=""
+e.AutoButtonColor=false e.ZIndex=4 e.Parent=plist
+Instance.new("UICorner",e).CornerRadius=UDim.new(0,3)
+local dotCol=isO and GD or(isMe and CY or AC)
+local txtCol=isO and GD or(isMe and CY or T2)
+local es=Instance.new("UIStroke")
+es.Color=isO and GD or(isMe and CY or AD)
+es.Thickness=1 es.Transparency=(isO or isMe)and .3 or .7
+es.Parent=e
+local dt=Instance.new("Frame")
+dt.Size=UDim2.new(0,4,0,4)dt.Position=UDim2.new(0,5,.5,0)
+dt.AnchorPoint=Vector2.new(0,.5)dt.BackgroundColor3=dotCol
+dt.ZIndex=5 dt.Parent=e
+Instance.new("UICorner",dt).CornerRadius=UDim.new(1,0)
+local n=Instance.new("TextLabel")
+n.Name="NL"n.Size=UDim2.new(1,-16,1,0)n.Position=UDim2.new(0,12,0,0)
+n.BackgroundTransparency=1 n.Text="> "..p.DisplayName..tag
+n.TextColor3=txtCol n.TextSize=8 n.Font=Enum.Font.Code
+n.TextXAlignment=Enum.TextXAlignment.Left
+n.TextTruncate=Enum.TextTruncate.AtEnd n.ZIndex=5 n.Parent=e
+if isO then
+task.spawn(function()local h=0
+while e and e.Parent do h=(h+0.01)%1
+local rc=rainbow(h)n.TextColor3=rc es.Color=rc dt.BackgroundColor3=rc
+task.wait(0.03)end end)
+end
+e.MouseEnter:Connect(function()
+if not isO and not isMe then
+tw2(e,.1,{BackgroundColor3=AD})tw2(n,.1,{TextColor3=AC})
+tw2(es,.1,{Color=AC,Transparency=.3})end end)
+e.MouseLeave:Connect(function()
+if not isO and not isMe then
+local s=sel==p
+tw2(e,.1,{BackgroundColor3=s and AD or BG})
+tw2(n,.1,{TextColor3=s and AC or T2})
+tw2(es,.1,{Color=s and AC or AD,Transparency=s and .3 or .7})end end)
+e.MouseButton1Click:Connect(function()
+if not isMe then sT(p)end end)
+end end
+P.PlayerAdded:Connect(bld)
+P.PlayerRemoving:Connect(function(p)if p==sel then sel=nil end task.defer(bld)end)
+bld()
+local function rHL()if sel and sel.Character then local x=sel.Character:FindFirstChild("_H")if x then x:Destroy()end end end
+local function aHL(p)rHL()if p and p.Character then
+local x=Instance.new("Highlight")x.Name="_H"
+x.FillColor=p.Name==OWNER and GD or AC
+x.OutlineColor=p.Name==OWNER and GD or Color3.new(0,1,0)
+x.FillTransparency=.7 x.DepthMode=Enum.HighlightDepthMode.AlwaysOnTop
+x.Adornee=p.Character x.Parent=p.Character end end
+local function uC()
+if sel then
+local isO=sel.Name==OWNER
+tname.Text="> "..sel.DisplayName..getTag(sel)
+tname.TextColor3=isO and GD or AC
+avp.Visible=false
+pcall(function()avi.Image=P:GetUserThumbnailAsync(sel.UserId,Enum.ThumbnailType.HeadShot,Enum.ThumbnailSize.Size100x100)end)
+tw2(avStk,.2,{Color=isO and GD or AC,Transparency=0})
+tw2(trowStk,.2,{Color=isO and GD or AC,Transparency=.3})
+else
+tname.Text="> None"tname.TextColor3=T2 avi.Image=""avp.Visible=true tdist.Text="dist: —"
+tstat.Text="IDLE"tstat.TextColor3=T3 sdot.BackgroundColor3=AC
+tw2(avStk,.2,{Color=AD,Transparency=.5})tw2(trowStk,.2,{Color=AD,Transparency=.5})
+tw2(statStk,.2,{Color=T3})end
+for _,c in plist:GetChildren()do if c:IsA("TextButton")then
+local isO2=c.Name==OWNER
+local isMe2=c.Name==lp.Name
+if not isO2 and not isMe2 then
+local s=sel and c.Name==sel.Name
+tw2(c,.1,{BackgroundColor3=s and AD or BG})
+local nl=c:FindFirstChild("NL")
+if nl then tw2(nl,.1,{TextColor3=s and AC or T2})end
+local es2=c:FindFirstChildWhichIsA("UIStroke")
+if es2 then tw2(es2,.1,{Color=s and AC or AD,Transparency=s and .3 or .7})end
+end end end end
+local function sS(tx,co)tstat.Text=tx tstat.TextColor3=co sdot.BackgroundColor3=co tw2(statStk,.2,{Color=co})end
+function sT(p)rHL()sel=p
+if p then aHL(p)sS("LCK",YL)else sS("IDLE",T3)end uC()end
+selB.MouseButton1Click:Connect(function()
+if sel then sT(nil)return end
+local m=rt(lp)if not m then return end
+local b,bd=nil,MD
+for _,p in P:GetPlayers()do if p~=lp and al(p)then
+local x=rt(p)if x then local d=(x.Position-m.Position).Magnitude
+if d<bd then bd=d b=p end end end end sT(b)end)
+tpB.MouseButton1Click:Connect(function()
+if not sel or not al(sel)then return end
+local m,x=rt(lp),rt(sel)
+if not m or not x then return end
+m.CFrame=CFrame.lookAt(bp(x),x.Position)
+freeze(m)
+sS("KILL",GR)plbl.Text="● killed"plbl.TextColor3=GR
+task.delay(1.5,function()
+if sel then sS("LCK",YL)end
+plbl.Text="● ready"plbl.TextColor3=AC
+end)end)
+RS.Heartbeat:Connect(function()
+if sel and not al(sel)then sT(nil)end
+if sel then local m,x=rt(lp),rt(sel)
+if m and x then tdist.Text=string.format("dist: %.1f",(x.Position-m.Position).Magnitude)end end
+if godMode then applyGodMode()end
+end)
